@@ -9,8 +9,10 @@ void rpc_server_move_rebind(int vfd, move_t *m)
 {
     printf("%s:%d in c rpc_server_move, speed: %d\npaths:", __FILE__, __LINE__, m->speed);
 
+    printf("m size=%d\n", sizeof(m->path));
     unsigned int i;
     rpcArray *array = &(m->path);
+    printf("array:n=%d\n", array->n);
     position_t *path = (position_t*) array->data;
     for (i = 0; i < array->n; ++i) {
         printf("Test c rpc, postion=(%d, %d)\n", path[i].x, path[i].y);
@@ -54,11 +56,15 @@ int main(int argc, char *argv[])
         }
     }
     int ret = packFromC(obj, pid, &m);
-    printf("ret=%d, plen=%d\n", ret, obj->packBuf->dataSize);
+    printf("pid=%d, ret=%d, plen=%d\n", pid, ret, (int)obj->packBuf->dataSize);
 
     //unpack
 
+    char buf[1024];
     const char *input = rpcMbufPullup(obj->packBuf);
+    memcpy(buf, input, 36);
+    buf[37] = 0;
+    printf("input=%c\n", buf);
     move_t *unpack_m;
     rpc_pto_id_t unpack_pid;
     size_t unpack_ret = unpackToC(obj, input, obj->packBuf->dataSize, &unpack_pid, (void**)&unpack_m);

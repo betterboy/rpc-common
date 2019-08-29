@@ -137,7 +137,7 @@ static void fillMeta(rpcTable *table, rpcClassMeta *classMetas, rpcFunctionMeta 
     }
 
     if (funcTable != NULL) {
-        for (i = 0; i < funcTable->rpcFuncList; ++i) {
+        for (i = 0; i < funcTable->elts; ++i) {
             rpcFunction *func =  &funcTable->rpcFuncList[i];
             rpcClass *argcls = &func->argClass;
             if (!argcls->c_impl) continue;
@@ -228,9 +228,11 @@ static void checkRpcTable(rpcTable *table, rpcClassMeta *clsMetas, rpcFunctionMe
             funcmeta = findFunctionMeta(funcMetas, argcls->name);
             if (funcmeta == NULL) continue;
             assert(func->c_func == funcmeta->c_func);
+            printf("fieldcout=%d, field->type=%d\n", argcls->fieldCount, argcls->fields[1].type);
             assert(RPC_C_CHECK_ARG(argcls));
             cls = RPC_STRUCT_ARG(argcls);
-            clsmeta = findClassMeta(clsMetas, argcls->name);
+            clsmeta = findClassMeta(clsMetas, cls->name);
+            printf("argcls->name=%s\n", argcls->name);
             assert(clsmeta);
             assert(cls->c_size == clsmeta->c_size);
             assert(0 == strcmp(cls->name, clsmeta->name));
@@ -282,6 +284,7 @@ static void buildFunctionSparseIndex(rpcFunctionTable *table)
 
 int rpcTableCreateFromBuf(rpcTable *table, const char *fileBuf, size_t len, rpcClassMeta *clsMetas, rpcFunctionMeta *funcMetas)
 {
+
     char *line;
     int i, j;
     int tmp;
@@ -290,7 +293,7 @@ int rpcTableCreateFromBuf(rpcTable *table, const char *fileBuf, size_t len, rpcC
     char buf[2048];
     char buf2[2048];
 
-    line = strtok((char*)fileBuf, '\n');
+    line = strtok((char*)fileBuf, "\n");
     sscanf(line, "class_table_num:%d", &tmp);
     clsTable = (rpcClassTable*)calloc(1, sizeof(rpcClassTable) + sizeof(rpcClass) * tmp);
 
@@ -299,7 +302,7 @@ int rpcTableCreateFromBuf(rpcTable *table, const char *fileBuf, size_t len, rpcC
 
     for (i = 0; i < clsTable->elts; ++i) {
         rpcClass *cls = &clsTable->rpcClassList[i];
-        memset(buf, 0, sizof(buf));
+        memset(buf, 0, sizeof(buf));
         line = strtok(NULL, "\n");
         sscanf(line, "field_count:%d,c_imp:%d,class_name=%s", &cls->fieldCount, &cls->c_impl, buf);
         cls->name = strdup(buf);
@@ -309,7 +312,7 @@ int rpcTableCreateFromBuf(rpcTable *table, const char *fileBuf, size_t len, rpcC
         for (j = 0; j < cls->fieldCount; ++j) {
             rpcField *field = &cls->fields[j];
             field->parent = cls;
-            memset(line, 0, sizeof(buf));
+            memset(buf, 0, sizeof(buf));
             line = strtok(NULL, "\n");
             sscanf(line, "field_type:%d,class_index:%d,array:%d,field_name:%s", 
                 &field->type, &field->clsIndex, &field->array, buf);
@@ -323,14 +326,14 @@ int rpcTableCreateFromBuf(rpcTable *table, const char *fileBuf, size_t len, rpcC
     funcTable->elts = tmp;
     funcTable->rpcFuncList = (rpcFunction*)(funcTable + 1);
 
-    for (j = 0; j < funcTable->elts; ++j) {
-        rpcFunction *func = &funcTable->rpcFuncList[j];
+    for (i = 0; i < funcTable->elts; ++i) {
+        rpcFunction *func = &funcTable->rpcFuncList[i];
         rpcClass *argcls = &func->argClass;
 
         memset(buf, 0, sizeof(buf));
         memset(buf2, 0, sizeof(buf2));
         line = strtok(NULL, "\n");
-        sscanf(line, "function_id:%d,c_imp:%d,arg_count:%d,module:%[^,]%*cfunction_name:%s", &tmp, &argcls->c_impl, argcls->fieldCount, buf, buf2);
+        sscanf(line, "function_id:%d,c_imp:%d,arg_count:%d,module:%[^,]%*cfunction_name:%s", &tmp, &argcls->c_impl, &argcls->fieldCount, buf, buf2);
         func->pto_id = (rpc_pto_id_t)tmp;
         func->module = strdup(buf);
         func->data = NULL;
@@ -342,17 +345,18 @@ int rpcTableCreateFromBuf(rpcTable *table, const char *fileBuf, size_t len, rpcC
             field->parent = argcls;
             memset(buf, 0, sizeof(buf));
             line = strtok(NULL, "\n");
-            sscanf(line, "arg_type:%d,class_index:%d,array:%d,arg_name=%s", &field->type, &field->clsIndex, &field->array, buf);
+            sscanf(line, "arg_type:%d,class_index:%d,array:%d,arg_name:%s", &field->type, &field->clsIndex, &field->array, buf);
             field->name = strdup(buf);
         }
     }
+
 
     table->funcTable = funcTable;
     table->classTable = clsTable;
     rpcSetClassPtr(table);
     fillMeta(table, clsMetas, funcMetas);
     checkRpcTable(table, clsMetas, funcMetas);
-    buildFunctionSparseIndex(table);
+    buildFunctionSparseIndex(table->funcTable);
     return 0;
 }
 
@@ -413,16 +417,16 @@ int getFieldSize(rpcField *field)
 
 static const char *typeName[] = {
     "rpc_int",
-    "rpc_int8",
-    "rpc_int16",
     "rpc_string",
     "rpc_class",
+    NULL,
+    NULL,
+    NULL,
+    "rpc_int8",
+    "rpc_int16",
     "rpc_float",
     "rpc_double",
     "rpc_int64",
-    NULL,
-    NULL,
-    NULL,
 };
 
 const char *getTypeName(int type)
@@ -431,6 +435,9 @@ const char *getTypeName(int type)
         if (NULL == typeName[type]) return "rpc_unknow_type";
         return typeName[type];
     }
+
+    return "rpc_unknow_type";
+
 }
 
 rpcObject *initRpcObjectFromBuf(rpcObject *obj, const char *buf, size_t size, rpcClassMeta *clsMetas, rpcFunctionMeta *funcMetas)
@@ -488,11 +495,11 @@ rpcObject *rpcObjectInit(rpcObject *obj, const char *file, rpcClassMeta *clsMeta
     }
 
     n = fread(buf, 1, len, f);
-    buf[len] = '\0';
+    buf[len] = 0;
     fclose(f);
 
     if (n != len) {
-        fprintf(stderr, "read file [%s] fail. expect:%d,read:%d\n", file, len, n);
+        fprintf(stderr, "read file [%s] fail. expect:%d,read:%d\n", file, (int)len, (int)n);
         free(buf);
         return NULL;
     }
@@ -500,6 +507,31 @@ rpcObject *rpcObjectInit(rpcObject *obj, const char *file, rpcClassMeta *clsMeta
     obj = initRpcObjectFromBuf(obj, buf, len, clsMetas, funcMetas);
     free(buf);
     return obj;
+}
+
+void rpcTableFree(rpcTable *table)
+{
+    int i;
+    rpcClassTable *clsTable = table->classTable;
+    rpcFunctionTable *funcTable = table->funcTable;
+
+    if (clsTable != NULL) {
+        for (i = 0; i < clsTable->elts; ++i) {
+            rpcClass *cls = &clsTable->rpcClassList[i];
+            freeClass(cls);
+        }
+        free(clsTable);
+    }
+
+    if  (funcTable != NULL) {
+        for (i = 0; i < funcTable->elts; ++i) {
+            rpcFunction *func = &funcTable->rpcFuncList[i];
+            freeFunction(func);
+        }
+        free(funcTable);
+    }
+
+    memset(table, 0, sizeof(*table));
 }
 
 int rpcObjectFree(rpcObject *obj)

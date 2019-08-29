@@ -19,6 +19,7 @@ rpcClassMeta auto_rpc_class_metas[] = {
 extern void rpc_server_move(int, struct move_t *);
 rpcFunctionMeta auto_rpc_function_metas[] = {
     {"rpc_server_move", (rpc_c_func_t)rpc_server_move,},
+    {NULL, NULL,},
 };
 
 

@@ -20,13 +20,13 @@
 #endif
 
 #define RPC_INT (0)
-#define RPC_INT8 (1)
-#define RPC_INT16 (2)
-#define RPC_STRING (3)
-#define RPC_CLASS (4)
-#define RPC_FLOAT (5)
-#define RPC_DOUBLE (6)
-#define RPC_INT64 (7)
+#define RPC_INT8 (6)
+#define RPC_INT16 (7)
+#define RPC_STRING (1)
+#define RPC_CLASS (2)
+#define RPC_FLOAT (8)
+#define RPC_DOUBLE (9)
+#define RPC_INT64 (10)
 
 #define RPC_ARRAY_VAR (-1) //Variable-length array
 #define RPC_ARRAY_NOT   (-2)

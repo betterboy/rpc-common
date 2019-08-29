@@ -1,1 +1,1 @@
-gcc -Wall -I ../../ ../../src/mbuf.c ../../src/rpc.c ../../src/rpc_c.c rpc_meta.c rpc_c_implement.c  test.c -o test
+gcc -Wall -g -I ../../ ../../src/mbuf.c ../../src/rpc.c ../../src/rpc_c.c rpc_meta.c rpc_c_implement.c test.c -o a.out
