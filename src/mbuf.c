@@ -93,8 +93,6 @@ char *rpcMbufPullup(rpcMbuf *mbuf)
     if (mbuf->blockCnt <= 0)
         return NULL;
     if (mbuf->blockCnt == 1) {
-        printf("blockcnt=%d,size=%d,data=%d\n", mbuf->blockCnt, mbuf->head->size, mbuf->head->tail - mbuf->head->head);
-
         goto done;
     }
 

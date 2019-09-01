@@ -12,7 +12,6 @@ inline static int unpackField(rpcField *field, rpcMbuf *mbuf, char *value, rpcIn
     switch (field->type) {
     case RPC_INT: {
         rpc_int32_t *v = (rpc_int32_t*)value;
-        printf("v=%d\n", *v);
         rpcInputBufGetType(inbuf, v, rpc_int32_t);
         break;
     }
@@ -48,11 +47,9 @@ inline static int unpackTypeClass(rpcField *field, int fieldCount, rpcMbuf *mbuf
     char *fieldValue;
     for (i = 0; i < fieldCount; ++i, ++field) {
         fieldValue = clsValue + field->c_offset;
-        printf("field->type=%d\n", field->type);
-        if (field->type == RPC_ARRAY_VAR) {
+        if (field->array == RPC_ARRAY_VAR) {
             rpcArray *ptr = (rpcArray*)fieldValue;
             rpcInputBufGetType(inbuf, &ptr->n, rpc_size_t);
-            printf("array n=%d\n",  ptr->n);
             if (ptr->n <= 0) {
                 ptr->data = NULL;
             } else {
@@ -60,7 +57,7 @@ inline static int unpackTypeClass(rpcField *field, int fieldCount, rpcMbuf *mbuf
                 rpcInputBufCheck(inbuf, ptr->n);
                 size_t fsz = getFieldSize(field);
                 ptr->data = rpcMbufAlloc(mbuf, ptr->n * fsz);
-                for (j = 0, data = (char*)ptr->data; i < ptr->n; ++i, data += fsz) {
+                for (j = 0, data = (char*)ptr->data; j < ptr->n; ++j, data += fsz) {
                     if (unpackField(field, mbuf, data, inbuf)) return -1;
                 }
             }
@@ -121,7 +118,6 @@ inline static int packTypeClass(rpcField *field, int fieldCount, void *clsValue,
 {
     int i, j;
     char *fieldValue;
-    printf("packTypeClass. field->name=%s\n", field->name);
     for (i = 0; i < fieldCount; ++i, ++field) {
         fieldValue = (char*)clsValue + field->c_offset;
         if (field->array == RPC_ARRAY_VAR) {
@@ -130,7 +126,7 @@ inline static int packTypeClass(rpcField *field, int fieldCount, void *clsValue,
             rpcArray *ptr = (rpcArray*)fieldValue;
             rpcMbufEnqType(mbuf, &ptr->n, rpc_size_t);
             fsz = getFieldSize(field);
-            for (j = 0, data = (char*)ptr->data; i < ptr->n; ++i, data += fsz) {
+            for (j = 0, data = (char*)ptr->data; j < ptr->n; ++j, data += fsz) {
                 if (packField(field, data, mbuf)) return -1;
             }
         } else {
@@ -150,12 +146,6 @@ int c_pack(rpcObject *obj)
     rpcMbufEnqType(mbuf, &func->pto_id, rpc_pto_id_t);
 
     //skip the first arg vfd
-    printf("cpack cls->field=%d\n", cls->fieldCount);
-    int i = 0;
-    for (i = 0; i < cls->fieldCount; ++i) {
-        printf("type=%d,name=%s\n", cls->fields[i].type, cls->fields[i].name);
-    }
-
     int ret = packTypeClass(cls->fields + 1, cls->fieldCount - 1, obj->packArgs, mbuf);
     if (ret) {
         return ret;
@@ -195,11 +185,12 @@ size_t unpackToC(rpcObject *obj, const char *input, size_t len, rpc_pto_id_t *pi
     pinbuf += sizeof(rpc_pto_id_t);
     rpcInputBufInit(inbuf, pinbuf, len - (pinbuf - input));
 
+
     void *arg = scriptUnpackToC(obj);
     *retcls = arg;
     *pid = tmpid;
      if (func->c_func != NULL) {
-         func->c_func(0, arg);
+        func->c_func(0, arg);
      }
 
      size_t plen = (rpc_size_t)inbuf->offset + sizeof(rpc_pto_id_t);

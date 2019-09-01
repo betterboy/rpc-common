@@ -127,7 +127,7 @@ static void fillMeta(rpcTable *table, rpcClassMeta *classMetas, rpcFunctionMeta 
             clsmeta = findClassMeta(classMetas, cls->name);
             if (clsmeta == NULL) fprintf(stderr, "errer: can not find clsmeta for %s\n", cls->name);
             assert(clsmeta);
-            printf("fill meta cls: %s,%d,%s,%d\n", cls->name, cls->c_size, clsmeta->name, clsmeta->c_size);
+            // printf("fill meta cls: %s,%d,%s,%d\n", cls->name, cls->c_size, clsmeta->name, clsmeta->c_size);
             cls->c_size = clsmeta->c_size;
             fieldmeta = clsmeta->fieldMeta;
             for (j = 0; j < clsmeta->fieldCount; ++j) {
@@ -228,11 +228,9 @@ static void checkRpcTable(rpcTable *table, rpcClassMeta *clsMetas, rpcFunctionMe
             funcmeta = findFunctionMeta(funcMetas, argcls->name);
             if (funcmeta == NULL) continue;
             assert(func->c_func == funcmeta->c_func);
-            printf("fieldcout=%d, field->type=%d\n", argcls->fieldCount, argcls->fields[1].type);
             assert(RPC_C_CHECK_ARG(argcls));
             cls = RPC_STRUCT_ARG(argcls);
             clsmeta = findClassMeta(clsMetas, cls->name);
-            printf("argcls->name=%s\n", argcls->name);
             assert(clsmeta);
             assert(cls->c_size == clsmeta->c_size);
             assert(0 == strcmp(cls->name, clsmeta->name));
@@ -407,7 +405,7 @@ int getFieldSize(rpcField *field)
         return sizeof(rpcString);
     }
     case RPC_CLASS: {
-        return sizeof(field->clsptr->c_size);
+        return field->clsptr->c_size;
     }
     default:
         assert(0);
