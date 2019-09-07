@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "src/rpc.h"
+#include "rpc.h"
 #include "rpc_meta.h"
 
 void rpc_server_move(int vfd, move_t *m)

@@ -1,9 +1,10 @@
 #include "rpc.h"
 #include "rpc_meta.h"
 
+
 static rpcFieldMeta position_t_fields[] = {
-    {"x", offsetof(struct position_t, x), },
-    {"y", offsetof(struct position_t, y), },
+    {"x", offsetof(struct position_t, x),},
+    {"y", offsetof(struct position_t, y),}
 };
 
 static rpcFieldMeta move_t_fields[] = {
@@ -22,4 +23,7 @@ rpcFunctionMeta auto_rpc_function_metas[] = {
     {NULL, NULL,},
 };
 
-
+rpcMeta auto_rpc_metas = {
+    auto_rpc_class_metas,
+    auto_rpc_function_metas,
+};

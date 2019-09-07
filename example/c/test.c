@@ -1,5 +1,5 @@
-#include "src/rpc.h"
-#include "src/rpc_c.h"
+#include "rpc.h"
+#include "rpc_c.h"
 #include "rpc_meta.h"
 
 extern rpcClassMeta auto_rpc_class_metas[];
@@ -21,7 +21,7 @@ void rpc_server_move_rebind(int vfd, move_t *m)
 int main(int argc, char *argv[])
 {
     rpcObject *obj = (rpcObject*)malloc(sizeof(rpcObject));
-    obj = rpcObjectInit(obj, "rpc.cfg", auto_rpc_class_metas, auto_rpc_function_metas);
+    obj = rpcObjectInit(obj, "../rpc.cfg", auto_rpc_class_metas, auto_rpc_function_metas);
     if (obj == NULL) {
         fprintf(stderr, "init rpc table fail\n");
         exit(-1);

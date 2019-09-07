@@ -1,0 +1,1 @@
+gcc -g -DRPC_LUA=1 -I /usr/include/ -I ./ -I ../ -L /usr/lib64/ -Wall -fPIC -shared -o RpcLua.so -llua ../mbuf.c ../rpc.c ../rpc_c.c ../rpc_script.c rpc_script_lua.c
