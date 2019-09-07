@@ -1,0 +1,13 @@
+imp daemon.version {
+// 验证协议头文件
+static void rpc_server_version(int vfd, string engine_version, string script_version, string pto_md5);
+
+// stat:0 成功 非0:协议对不上
+static void rpc_client_version_return(int vfd, int stat, string encoding);
+static void rpc_client_update_pto(int vfd, string protocols);
+static void rpc_client_update_pto_str(int vfd, string protocols);
+
+//额外支持有效的验证方式
+#define VERIFY_METHO_YYOPENID  "yyopenid"
+void rpc_client_verify_ext_method(int vfd, string *methods);
+}

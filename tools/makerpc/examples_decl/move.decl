@@ -1,0 +1,17 @@
+imp c {
+
+class position_t {
+	int x;
+	int y;
+}
+
+class move_t {
+	int speed;
+	position_t *path;
+}
+
+void rpc_server_move(int uid, move_t move);
+
+void rpc_client_move(int uid, position_t pos);
+
+}

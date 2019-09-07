@@ -1,0 +1,41 @@
+imp module.mail.main {
+
+class mail_sender_t {
+	int uid;
+	int honor;
+	string name;
+	string legion_id;
+	string legion_name;
+	string legion_icon;
+}
+
+class mail_message_t {
+	// 0:纯文本,1:格式化文本
+	int type;
+	string msg; // PackFMTMsgId()
+}
+
+// type: 1:系统消息 2:帮主邮件 3:帮派邀请 4:奖励邮件
+class mail_t {
+	string glbkey;
+	int type;
+	mail_sender_t sender;
+	int time;
+	mail_message_t message;
+	string reward;	
+	int isPicked; // 如果是奖励邮件，是否已经领取奖励
+	int from; // from message_id table
+}
+
+void rpc_client_mail_list(int uid, mail_t *list, int newAmount);
+void rpc_client_mail_add(int uid, mail_t pto);
+
+void rpc_server_mail_del(object user, string glbkey);
+void rpc_client_mail_del(int uid, string glbkey);
+
+void rpc_server_mail_open_tag(object user);
+void rpc_server_mail_pick_reward(object user, string glbkey, int isForce);
+
+void rpc_server_chat(object user, string content);
+
+}
