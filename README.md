@@ -20,14 +20,16 @@
 
 ## Code Structure
 
---[src]协议源文件，一级目录下为公用代码文件，子目录如lua、python为脚本binding。
---[example]各个绑定的示例代码。
+-[src]协议源文件，一级目录下为公用代码文件，子目录如lua、python为脚本binding。
+-[example]各个绑定的示例代码。
 >运行build.sh生成.so文件，然后拷贝到示例代码目录。
 
 ## Install
 安装该模块非常简单，进入到需要的binding目录，运行build.sh文件，生成.so文件，并在你的代码中载入该库
->chmod +x build.sh
->./build.sh
+```sh
+$chmod +x build.sh
+$./build.sh
+```
 
 ## Usage
 具体用法请查看example目录
